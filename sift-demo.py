@@ -8,7 +8,7 @@ def sift_keypoints_detect(image):
     gray_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
     # 获取图像特征sift-SIFT特征点,实例化对象sift
-    sift = cv.xfeatures2d.SIFT_create()
+    sift = cv.SIFT_create()
 
     # keypoints:特征点向量,向量内的每一个元素是一个KeyPoint对象，包含了特征点的各种属性信息(角度、关键特征点坐标等)
     # features:表示输出的sift特征向量，通常是128维的
@@ -84,15 +84,19 @@ def Panorama_stitching(image_right, image_left):
         return Panorama
 
 
+def zh_cn(strs):
+    return strs.encode('gbk').decode(errors='ignore')
+
+
 if __name__ == '__main__':
 
     # 读取需要拼接的图像,需要注意图像左右的顺序
-    image_left = cv.imread("./Left.jpg")
-    image_right = cv.imread("./Right.jpg")
+    image_left = cv.imread("img/src1.jpg")
+    image_right = cv.imread("img/det.jpg")
 
     # 通过调用cv2.resize()使用插值的方式来改变图像的尺寸，保证左右两张图像大小一致
     # cv.resize()函数中的第二个形参dsize表示输出图像大小尺寸，当设置为0(None)时，则表示按fx与fy与原始图像大小相乘得到输出图像尺寸大小
-    image_right = cv.resize(image_right, None, fx=0.4, fy=0.24)
+    image_right = cv.resize(image_right, None, fx=0.8, fy=0.6)
     image_left = cv.resize(
         image_left, (image_right.shape[1], image_right.shape[0]))
 
@@ -103,12 +107,14 @@ if __name__ == '__main__':
         image_left)
 
     # 利用np.hstack()函数同时将原图和绘有关键特征点的图像沿着竖直方向(水平顺序)堆叠起来
-    cv.imshow("左图关键特征点检测", np.hstack((image_left, keypoints_image_left)))
+    cv.imshow(zh_cn("左图关键特征点检测"), np.hstack(
+        (image_left, keypoints_image_left)))
     # 一般在imshow后设置 waitKey(0) , 代表按任意键继续
     cv.waitKey(0)
     # 删除先前建立的窗口
     cv.destroyAllWindows()
-    cv.imshow("右图关键特征点检测", np.hstack((image_right, keypoints_image_right)))
+    cv.imshow(zh_cn("右图关键特征点检测"), np.hstack(
+        (image_right, keypoints_image_right)))
     cv.waitKey(0)
     cv.destroyAllWindows()
     goodMatch = get_feature_point_ensemble(features_right, features_left)
@@ -117,14 +123,14 @@ if __name__ == '__main__':
     # matchColor – 匹配的颜色（特征点和连线),若matchColor==Scalar::all(-1),颜色随机
     all_goodmatch_image = cv.drawMatches(
         image_right, keypoints_right, image_left, keypoints_left, goodMatch, None, None, None, None, flags=2)
-    cv.imshow("所有匹配的SIFT关键特征点连线", all_goodmatch_image)
+    cv.imshow(zh_cn("所有匹配的SIFT关键特征点连线"), all_goodmatch_image)
     cv.waitKey(0)
     cv.destroyAllWindows()
 
     # 把图片拼接成全景图并保存
     Panorama = Panorama_stitching(image_right, image_left)
-    cv.namedWindow("全景图", cv.WINDOW_AUTOSIZE)
-    cv.imshow("全景图", Panorama)
-    cv.imwrite("./全景图.jpg", Panorama)
+    cv.namedWindow(zh_cn("全景图"), cv.WINDOW_AUTOSIZE)
+    cv.imshow(zh_cn("全景图"), Panorama)
+    cv.imwrite("img/全景图.jpg", Panorama)
     cv.waitKey(0)
     cv.destroyAllWindows()
